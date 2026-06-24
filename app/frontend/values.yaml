@@ -1,0 +1,4 @@
+image:
+  repository: ghcr.io/ebak555/securechain-frontend
+  tag: "latest"
+  pullPolicy: IfNotPresent
