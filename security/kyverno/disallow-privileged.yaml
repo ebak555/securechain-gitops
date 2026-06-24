@@ -1,0 +1,42 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged
+  annotations:
+    policies.kyverno.io/title: Disallow Privileged Containers
+    policies.kyverno.io/description: >-
+      Blocks pods that run in privileged mode or as root. Containers must
+      explicitly declare runAsNonRoot: true.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: disallow-privileged-mode
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [securechain]
+      validate:
+        message: "Privileged containers are not allowed."
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.securityContext.privileged || false }}"
+                    operator: Equals
+                    value: true
+
+    - name: require-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [securechain]
+      validate:
+        message: "Pods must set runAsNonRoot: true in the pod security context."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true

@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-image-signature
+  annotations:
+    policies.kyverno.io/title: Verify Cosign Image Signature
+    policies.kyverno.io/description: >-
+      Every securechain image must be signed via Cosign keyless signing
+      (GitHub OIDC). Unsigned or tampered images are rejected at admission.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: verify-image-signature
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [securechain]
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/ebak555/securechain-*"
+          attestors:
+            - entries:
+                - keyless:
+                    subject: "https://github.com/ebak555/securechain-app/.github/workflows/02-image-build.yml@refs/heads/main"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev

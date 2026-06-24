@@ -1,0 +1,54 @@
+admissionController:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+backgroundController:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+cleanupController:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+reportsController:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+webhooksCleanup:
+  enabled: true
+
+config:
+  webhooks:
+    - namespaceSelector:
+        matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: NotIn
+            values:
+              - kube-system
+              - kyverno
+              - argocd
+              - gke-managed-system

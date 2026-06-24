@@ -1,0 +1,25 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: block-latest-tag
+  annotations:
+    policies.kyverno.io/title: Block Latest Tag
+    policies.kyverno.io/description: >-
+      Rejects any workload using the :latest image tag. All images must
+      be pinned to an immutable tag so deployments are reproducible.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: block-latest-tag
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [securechain]
+      validate:
+        message: "Image tag ':latest' is not allowed. Pin to an immutable tag."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"

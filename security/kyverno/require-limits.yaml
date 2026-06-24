@@ -1,0 +1,38 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-limits
+  annotations:
+    policies.kyverno.io/title: Require CPU and Memory Limits
+    policies.kyverno.io/description: >-
+      Every container must declare CPU and memory requests and limits.
+      Prevents resource starvation and ensures the scheduler can place pods.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [securechain]
+      validate:
+        message: "CPU and memory requests/limits are required on all containers."
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.requests.cpu || '' }}"
+                    operator: Equals
+                    value: ""
+                  - key: "{{ element.resources.requests.memory || '' }}"
+                    operator: Equals
+                    value: ""
+                  - key: "{{ element.resources.limits.cpu || '' }}"
+                    operator: Equals
+                    value: ""
+                  - key: "{{ element.resources.limits.memory || '' }}"
+                    operator: Equals
+                    value: ""

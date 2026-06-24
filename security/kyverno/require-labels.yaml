@@ -1,0 +1,26 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels
+  annotations:
+    policies.kyverno.io/title: Require Standard Labels
+    policies.kyverno.io/description: >-
+      Every pod must carry app and environment labels for observability,
+      network policy targeting, and ArgoCD tracking.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-labels
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [securechain]
+      validate:
+        message: "Pods must have 'app' and 'environment' labels."
+        pattern:
+          metadata:
+            labels:
+              app: "?*"
+              environment: "?*"
