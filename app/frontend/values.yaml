@@ -1,4 +1,4 @@
 image:
   repository: ghcr.io/ebak555/securechain-frontend
-  tag: "latest"
+  tag: "sha-6ce17ced033da8b90c86cdc0f7af9fb262200fda"
   pullPolicy: IfNotPresent
