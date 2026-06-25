@@ -37,6 +37,9 @@ prometheus:
       - job_name: kyverno
         static_configs:
           - targets: ["kyverno-svc-metrics.kyverno.svc.cluster.local:8000"]
+      - job_name: argocd
+        static_configs:
+          - targets: ["argocd-application-controller-metrics.argocd.svc.cluster.local:8082"]
 
 kube-state-metrics:
   resources:

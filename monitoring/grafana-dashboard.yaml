@@ -183,6 +183,90 @@ data:
               ]}
             }
           }
+        },
+        {
+          "id": 8,
+          "title": "ArgoCD Deployments (last 7 days)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (name) (increase(argocd_app_sync_total{phase=\"Succeeded\"}[1h]))",
+              "legendFormat": "{{name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "bars" },
+              "color": { "mode": "palette-classic" }
+            }
+          },
+          "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+        },
+        {
+          "id": 9,
+          "title": "ArgoCD Total Syncs (last 7d)",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 16, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(increase(argocd_app_sync_total{phase=\"Succeeded\"}[7d]))",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 10,
+          "title": "ArgoCD App Health",
+          "type": "table",
+          "gridPos": { "x": 12, "y": 20, "w": 12, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "argocd_app_info",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true
+            }
+          ],
+          "transformations": [
+            { "id": "labelsToFields", "options": { "mode": "columns" } },
+            { "id": "organize", "options": {
+              "excludeByName": { "__name__": true, "Time": true, "Value": true, "dest_server": true, "instance": true, "job": true, "namespace": true, "repo": true },
+              "renameByName": { "name": "Application", "health_status": "Health", "sync_status": "Sync", "project": "Project" }
+            }}
+          ],
+          "fieldConfig": {
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Health" }, "properties": [
+                { "id": "custom.displayMode", "value": "color-background" },
+                { "id": "mappings", "value": [
+                  { "type": "value", "options": { "Healthy": { "color": "green", "index": 0 }, "Degraded": { "color": "red", "index": 1 }, "Progressing": { "color": "yellow", "index": 2 } } }
+                ]}
+              ]},
+              { "matcher": { "id": "byName", "options": "Sync" }, "properties": [
+                { "id": "custom.displayMode", "value": "color-background" },
+                { "id": "mappings", "value": [
+                  { "type": "value", "options": { "Synced": { "color": "green", "index": 0 }, "OutOfSync": { "color": "orange", "index": 1 } } }
+                ]}
+              ]}
+            ]
+          }
         }
       ],
       "schemaVersion": 38,
