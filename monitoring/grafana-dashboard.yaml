@@ -1,0 +1,190 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: securechain-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  securechain.json: |
+    {
+      "title": "SecureChain DevSecOps",
+      "uid": "securechain-devsecops",
+      "version": 1,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Falco Alerts by Severity (last 1h)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (priority_raw) (increase(falcosecurity_falcosidekick_falco_events_total[5m]))",
+              "legendFormat": "{{priority_raw}}",
+              "refId": "A"
+            }
+          ],
+          "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+          "fieldConfig": {
+            "defaults": { "custom": { "lineWidth": 2, "fillOpacity": 10 } },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-red" } }] },
+              { "matcher": { "id": "byName", "options": "error" },    "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+              { "matcher": { "id": "byName", "options": "warning" },  "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+              { "matcher": { "id": "byName", "options": "notice" },   "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "title": "Total Falco Events (last 1h)",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(increase(falcosecurity_falcosidekick_falco_events_total[1h]))",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "area",
+            "orientation": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 10 },
+                { "color": "red", "value": 50 }
+              ]},
+              "mappings": []
+            }
+          }
+        },
+        {
+          "id": 3,
+          "title": "Falco Alerts by Rule (last 1h)",
+          "type": "piechart",
+          "gridPos": { "x": 12, "y": 4, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (rule) (increase(falcosecurity_falcosidekick_falco_events_total[1h]))",
+              "legendFormat": "{{rule}}",
+              "refId": "A"
+            }
+          ],
+          "options": { "legend": { "displayMode": "list", "placement": "right" } }
+        },
+        {
+          "id": 4,
+          "title": "Kyverno Policy Violations (last 1h)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (policy_name) (increase(kyverno_policy_results_total{rule_result=\"fail\"}[5m]))",
+              "legendFormat": "{{policy_name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "lineWidth": 2, "fillOpacity": 10 },
+              "color": { "mode": "palette-classic" }
+            }
+          }
+        },
+        {
+          "id": 5,
+          "title": "Kyverno Policy Pass Rate (%)",
+          "type": "gauge",
+          "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "100 * sum(increase(kyverno_policy_results_total{rule_result=\"pass\"}[1h])) / (sum(increase(kyverno_policy_results_total[1h])) > 0)",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0, "max": 100,
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 80 },
+                { "color": "green", "value": 95 }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 6,
+          "title": "Kyverno Total Violations (last 1h)",
+          "type": "stat",
+          "gridPos": { "x": 18, "y": 8, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(increase(kyverno_policy_results_total{rule_result=\"fail\"}[1h]))",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 1 },
+                { "color": "red", "value": 5 }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 7,
+          "title": "Pods Running in securechain namespace",
+          "type": "stat",
+          "gridPos": { "x": 18, "y": 12, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "count(kube_pod_status_phase{namespace=\"securechain\",phase=\"Running\"})",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "red", "value": null },
+                { "color": "green", "value": 2 }
+              ]}
+            }
+          }
+        }
+      ],
+      "schemaVersion": 38,
+      "tags": ["securechain", "devsecops", "security"]
+    }
