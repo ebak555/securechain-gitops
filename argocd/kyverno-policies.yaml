@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: securechain
+  name: kyverno-policies
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,15 +10,13 @@ spec:
   source:
     repoURL: https://github.com/ebak555/securechain-gitops.git
     targetRevision: main
-    path: app
+    path: security/kyverno/policies
     directory:
-      recurse: true
+      recurse: false
   destination:
     server: https://kubernetes.default.svc
-    namespace: securechain
+    namespace: kyverno
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
