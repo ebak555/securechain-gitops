@@ -21,7 +21,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: backend
-          image: ghcr.io/ebak555/securechain-backend:sha-6ce17ced033da8b90c86cdc0f7af9fb262200fda
+          image: ghcr.io/ebak555/securechain-backend:sha-3ccf32ef0a8dddb423c8f7e238b5347245f3369f
           ports:
             - containerPort: 8080
           env:
