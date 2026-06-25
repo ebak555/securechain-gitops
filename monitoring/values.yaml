@@ -33,7 +33,7 @@ prometheus:
     additionalScrapeConfigs:
       - job_name: falcosidekick
         static_configs:
-          - targets: ["falco-falcosidekick.falco.svc.cluster.local:2810"]
+          - targets: ["falco-falcosidekick.falco.svc.cluster.local:2801"]
       - job_name: kyverno
         static_configs:
           - targets: ["kyverno-svc-metrics.kyverno.svc.cluster.local:8000"]
