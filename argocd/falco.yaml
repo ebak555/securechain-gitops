@@ -1,0 +1,91 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: falco
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://falcosecurity.github.io/charts
+    chart: falco
+    targetRevision: "9.1.0"
+    helm:
+      releaseName: falco
+      values: |
+        driver:
+          kind: modern_ebpf
+        collectors:
+          enabled: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        falcosidekick:
+          enabled: true
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          config:
+            prometheusexporter:
+              enabled: true
+        customRules:
+          securechain-rules.yaml: |-
+            - rule: Shell Spawned in Container
+              desc: Detects a shell being spawned inside any container in the securechain namespace
+              condition: >
+                spawned_process and
+                container and
+                (proc.name in (shell_binaries)) and
+                k8s.ns.name = "securechain"
+              output: >
+                Shell spawned in securechain container
+                (user=%user.name container=%container.name image=%container.image.repository
+                shell=%proc.name parent=%proc.pname ns=%k8s.ns.name pod=%k8s.pod.name)
+              priority: WARNING
+              tags: [container, shell, securechain]
+
+            - rule: Package Manager Executed in Container
+              desc: Detects package manager execution inside any container
+              condition: >
+                spawned_process and
+                container and
+                proc.name in (apt, apt-get, apk, pip, pip3, yum, dnf, rpm)
+              output: >
+                Package manager executed in container
+                (user=%user.name container=%container.name image=%container.image.repository
+                command=%proc.cmdline ns=%k8s.ns.name pod=%k8s.pod.name)
+              priority: WARNING
+              tags: [container, package-manager]
+
+            - rule: Write to /etc in Container
+              desc: Detects any write operation to /etc inside a container
+              condition: >
+                open_write and
+                container and
+                fd.name startswith /etc
+              output: >
+                Write to /etc detected in container
+                (user=%user.name container=%container.name image=%container.image.repository
+                file=%fd.name ns=%k8s.ns.name pod=%k8s.pod.name)
+              priority: ERROR
+              tags: [container, filesystem, etc]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: falco
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

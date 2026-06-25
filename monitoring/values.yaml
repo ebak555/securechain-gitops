@@ -1,0 +1,57 @@
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: true
+  replicas: 1
+  service:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  adminPassword: "securechain-grafana"
+  additionalDataSources:
+    - name: Falco-Alerts
+      type: webhook
+      access: proxy
+
+prometheus:
+  prometheusSpec:
+    replicas: 1
+    retention: 7d
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    additionalScrapeConfigs:
+      - job_name: falcosidekick
+        static_configs:
+          - targets: ["falco-falcosidekick.falco.svc.cluster.local:2802"]
+      - job_name: kyverno
+        static_configs:
+          - targets: ["kyverno-admission-controller.kyverno.svc.cluster.local:8000"]
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
