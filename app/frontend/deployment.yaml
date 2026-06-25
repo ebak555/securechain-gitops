@@ -19,6 +19,7 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 101
       containers:
         - name: frontend
           image: ghcr.io/ebak555/securechain-frontend:sha-3ccf32ef0a8dddb423c8f7e238b5347245f3369f
