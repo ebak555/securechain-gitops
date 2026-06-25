@@ -22,7 +22,7 @@ spec:
         runAsUser: 101
       containers:
         - name: frontend
-          image: ghcr.io/ebak555/securechain-frontend:sha-46284d291c0f9757e9971c5da93834544e476e35
+          image: ghcr.io/ebak555/securechain-frontend:sha-23bef774347242199ba21150c3a82217854c5609
           ports:
             - containerPort: 8080
           resources:
